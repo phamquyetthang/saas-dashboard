@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<!--
+  PROJECTS DASHBOARD — AI-READABLE STRUCTURE
+  ==========================================
+  This file tracks all SaaS/side projects.
+
+  To parse projects: look for <article> tags with data-project and data-status attributes.
+  Each article contains:
+    - .project-name: project name
+    - .project-status: status badge text
+    - .project-desc: short description
+    - .project-goal: goal
+    - .project-next: next action
+    - .project-tech: tech stack (each tag in a <span>)
+    - .project-updated: last updated date
+
+  Status values: "active" | "parking" | "paused" | "done"
+  Rule: Only 1 project can be "active" at a time.
+
+  To update: edit the <article> data or add a new one following the same pattern.
+  Summary counts are auto-calculated by JavaScript on load.
+-->
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Projects Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .card-active   { border-color: #22c55e; }
+    .card-parking  { border-color: #f59e0b; }
+    .card-paused   { border-color: #6b7280; }
+    .card-done     { border-color: #3b82f6; }
+    .badge-active  { background:#14532d; color:#4ade80; }
+    .badge-parking { background:#451a03; color:#fbbf24; }
+    .badge-paused  { background:#1f2937; color:#9ca3af; }
+    .badge-done    { background:#1e3a5f; color:#60a5fa; }
+    article { transition: opacity 0.2s, transform 0.2s; }
+    article.hidden-card { opacity: 0; pointer-events: none; height: 0; padding: 0; margin: 0; overflow: hidden; border: none; }
+    .filter-btn.active-filter { background: #6366f1; color: #fff; }
+  </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen p-6">
+
+  <div class="max-w-6xl mx-auto">
+
+    <!-- Header -->
+    <header class="mb-8">
+      <h1 class="text-3xl font-bold text-white tracking-tight">⚡ Projects Dashboard</h1>
+      <p class="text-gray-400 mt-1 text-sm">Quyet's SaaS & side project tracker</p>
+    </header>
+
+    <!-- ===== SUMMARY SECTION ===== -->
+    <!-- AI: summary counts are rendered by JS from project data below -->
+    <section id="summary" class="mb-8 grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <div class="bg-gray-900 rounded-xl p-4 border border-gray-800">
+        <div class="text-gray-400 text-xs uppercase tracking-widest mb-1">Total</div>
+        <div id="count-total" class="text-3xl font-bold text-white">—</div>
+        <div class="text-gray-500 text-xs mt-1">projects</div>
+      </div>
+      <div class="bg-gray-900 rounded-xl p-4 border border-green-900/40">
+        <div class="text-green-400 text-xs uppercase tracking-widest mb-1">🟢 Active</div>
+        <div id="count-active" class="text-3xl font-bold text-green-400">—</div>
+        <div class="text-gray-500 text-xs mt-1">in progress</div>
+      </div>
+      <div class="bg-gray-900 rounded-xl p-4 border border-amber-900/40">
+        <div class="text-amber-400 text-xs uppercase tracking-widest mb-1">🅿️ Parking</div>
+        <div id="count-parking" class="text-3xl font-bold text-amber-400">—</div>
+        <div class="text-gray-500 text-xs mt-1">on hold</div>
+      </div>
+      <div class="bg-gray-900 rounded-xl p-4 border border-gray-800">
+        <div class="text-gray-400 text-xs uppercase tracking-widest mb-1">⏸️ Paused</div>
+        <div id="count-paused" class="text-3xl font-bold text-gray-400">—</div>
+        <div class="text-gray-500 text-xs mt-1">paused</div>
+      </div>
+    </section>
+
+    <!-- ===== FILTER BUTTONS ===== -->
+    <div class="mb-6 flex flex-wrap gap-2" id="filters">
+      <button onclick="filterProjects('all')"     class="filter-btn active-filter px-4 py-1.5 rounded-full text-sm font-medium bg-gray-800 text-gray-200 border border-gray-700 hover:bg-indigo-600 transition" data-filter="all">All</button>
+      <button onclick="filterProjects('active')"  class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-gray-800 text-gray-200 border border-gray-700 hover:bg-indigo-600 transition" data-filter="active">🟢 Active</button>
+      <button onclick="filterProjects('parking')" class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-gray-800 text-gray-200 border border-gray-700 hover:bg-indigo-600 transition" data-filter="parking">🅿️ Parking</button>
+      <button onclick="filterProjects('paused')"  class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-gray-800 text-gray-200 border border-gray-700 hover:bg-indigo-600 transition" data-filter="paused">⏸️ Paused</button>
+      <button onclick="filterProjects('done')"    class="filter-btn px-4 py-1.5 rounded-full text-sm font-medium bg-gray-800 text-gray-200 border border-gray-700 hover:bg-indigo-600 transition" data-filter="done">✅ Done</button>
+    </div>
+
+    <!-- ===== PROJECT CARDS ===== -->
+    <!-- AI: Each <article> = 1 project. Edit data-project (slug) and data-status to update. -->
+    <div id="project-grid" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+
+      <!-- PROJECT: istqb -->
+      <article data-project="istqb" data-status="active" class="card-active bg-gray-900 border-2 rounded-2xl p-5 flex flex-col gap-3">
+        <div class="flex items-start justify-between gap-2">
+          <h2 class="project-name text-xl font-bold text-white tracking-tight">ISTQB</h2>
+          <span class="project-status badge-active text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">🟢 Active</span>
+        </div>
+        <p class="project-desc text-gray-400 text-sm leading-relaxed">Website luyện thi ISTQB với nội dung i18n đa ngôn ngữ, hướng đến traffic SEO tự nhiên.</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">🎯 Goal</span>
+            <span class="project-goal text-gray-200">Tăng traffic SEO + thêm mock exam</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">⚡ Next</span>
+            <span class="project-next text-green-300 font-medium">Research thêm keywords, viết thêm bài</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">👤 Users</span>
+            <span class="text-gray-300">Có</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">💰 Revenue</span>
+            <span class="text-gray-400">Chưa</span>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-1">
+          <span class="project-tech bg-gray-800 text-indigo-300 text-xs px-2.5 py-1 rounded-md font-mono">Next.js</span>
+          <span class="project-tech bg-gray-800 text-indigo-300 text-xs px-2.5 py-1 rounded-md font-mono">i18n</span>
+          <span class="project-tech bg-gray-800 text-indigo-300 text-xs px-2.5 py-1 rounded-md font-mono">SEO</span>
+        </div>
+        <div class="text-gray-600 text-xs mt-auto pt-2 border-t border-gray-800">
+          🕐 Last updated: <span class="project-updated">2026-05-19</span>
+        </div>
+      </article>
+
+      <!-- PROJECT: youtube-autopilot -->
+      <article data-project="youtube-autopilot" data-status="parking" class="card-parking bg-gray-900 border-2 rounded-2xl p-5 flex flex-col gap-3">
+        <div class="flex items-start justify-between gap-2">
+          <h2 class="project-name text-xl font-bold text-white tracking-tight">youtube-autopilot</h2>
+          <span class="project-status badge-parking text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">🅿️ Parking</span>
+        </div>
+        <p class="project-desc text-gray-400 text-sm leading-relaxed">Python CLI tool tự động hóa việc upload, schedule và quản lý nội dung cho nhiều YouTube channel.</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">🎯 Goal</span>
+            <span class="project-goal text-gray-200">Tool tự dùng để chạy 5–10 channel</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">⚡ Next</span>
+            <span class="project-next text-amber-300 font-medium">Fix Telegram bot + test pipeline đầy đủ</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">👤 Users</span>
+            <span class="text-gray-300">Tự dùng</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">💰 Revenue</span>
+            <span class="text-gray-400">Chưa</span>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-1">
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">Python</span>
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">CLI</span>
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">Telegram Bot</span>
+        </div>
+        <div class="text-gray-600 text-xs mt-auto pt-2 border-t border-gray-800">
+          🕐 Last updated: <span class="project-updated">2026-05-19</span>
+        </div>
+      </article>
+
+      <!-- PROJECT: facebookpilot -->
+      <article data-project="facebookpilot" data-status="parking" class="card-parking bg-gray-900 border-2 rounded-2xl p-5 flex flex-col gap-3">
+        <div class="flex items-start justify-between gap-2">
+          <h2 class="project-name text-xl font-bold text-white tracking-tight">facebookpilot</h2>
+          <span class="project-status badge-parking text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">🅿️ Parking</span>
+        </div>
+        <p class="project-desc text-gray-400 text-sm leading-relaxed">Node.js + Chrome Extension tự động hóa đăng bài Facebook profile/page, dùng nội bộ trước rồi commercialize.</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">🎯 Goal</span>
+            <span class="project-goal text-gray-200">Tool tự dùng trước, sau bán</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">⚡ Next</span>
+            <span class="project-next text-amber-300 font-medium">Fix profile posting bug (post_button_not_found)</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">👤 Users</span>
+            <span class="text-gray-300">Tự dùng</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">💰 Revenue</span>
+            <span class="text-gray-400">Chưa</span>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-1">
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">Node.js</span>
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">Chrome Extension</span>
+        </div>
+        <div class="text-gray-600 text-xs mt-auto pt-2 border-t border-gray-800">
+          🕐 Last updated: <span class="project-updated">2026-05-19</span>
+        </div>
+      </article>
+
+      <!-- PROJECT: htmlimg -->
+      <article data-project="htmlimg" data-status="parking" class="card-parking bg-gray-900 border-2 rounded-2xl p-5 flex flex-col gap-3">
+        <div class="flex items-start justify-between gap-2">
+          <h2 class="project-name text-xl font-bold text-white tracking-tight">htmlimg</h2>
+          <span class="project-status badge-parking text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">🅿️ Parking</span>
+        </div>
+        <p class="project-desc text-gray-400 text-sm leading-relaxed">Tool convert HTML sang ảnh, expose qua FastAPI. Open source với demo public trên HuggingFace.</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">🎯 Goal</span>
+            <span class="project-goal text-gray-200">Open source tool + public API</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">⚡ Next</span>
+            <span class="project-next text-amber-300 font-medium">Test với real API key, deploy demo lên HuggingFace</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">👤 Users</span>
+            <span class="text-gray-300">Chưa</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">💰 Revenue</span>
+            <span class="text-gray-400">Chưa</span>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-1">
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">Python</span>
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">FastAPI</span>
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">HTML UI</span>
+        </div>
+        <div class="text-gray-600 text-xs mt-auto pt-2 border-t border-gray-800">
+          🕐 Last updated: <span class="project-updated">2026-05-19</span>
+        </div>
+      </article>
+
+      <!-- PROJECT: catme-auto-merge-video -->
+      <article data-project="catme-auto-merge-video" data-status="parking" class="card-parking bg-gray-900 border-2 rounded-2xl p-5 flex flex-col gap-3">
+        <div class="flex items-start justify-between gap-2">
+          <h2 class="project-name text-xl font-bold text-white tracking-tight">catme-auto-merge-video</h2>
+          <span class="project-status badge-parking text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">🅿️ Parking</span>
+        </div>
+        <p class="project-desc text-gray-400 text-sm leading-relaxed">Desktop app (Tauri + React) tự động ghép và render video. Đã có payment system sẵn.</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">🎯 Goal</span>
+            <span class="project-goal text-gray-200">Tool desktop render video tự dùng</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">⚡ Next</span>
+            <span class="project-next text-amber-300 font-medium">TBD</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">👤 Users</span>
+            <span class="text-gray-300">Tự dùng</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">💰 Revenue</span>
+            <span class="text-green-400 font-medium">Có payment system ✓</span>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-1">
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">Tauri</span>
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">React</span>
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">Video</span>
+        </div>
+        <div class="text-gray-600 text-xs mt-auto pt-2 border-t border-gray-800">
+          🕐 Last updated: <span class="project-updated">2026-05-19</span>
+        </div>
+      </article>
+
+      <!-- PROJECT: tantinh -->
+      <article data-project="tantinh" data-status="paused" class="card-paused bg-gray-900 border-2 rounded-2xl p-5 flex flex-col gap-3">
+        <div class="flex items-start justify-between gap-2">
+          <h2 class="project-name text-xl font-bold text-white tracking-tight">tantinh</h2>
+          <span class="project-status badge-paused text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">⏸️ Paused</span>
+        </div>
+        <p class="project-desc text-gray-400 text-sm leading-relaxed">Mobile app React Native + Expo, monetize qua In-App Purchase.</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">🎯 Goal</span>
+            <span class="project-goal text-gray-200">Mobile app, bán qua IAP</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">⚡ Next</span>
+            <span class="project-next text-gray-400">TBD</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">👤 Users</span>
+            <span class="text-gray-400">Chưa</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">💰 Revenue</span>
+            <span class="text-gray-400">Chưa</span>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-1">
+          <span class="project-tech bg-gray-800 text-gray-400 text-xs px-2.5 py-1 rounded-md font-mono">React Native</span>
+          <span class="project-tech bg-gray-800 text-gray-400 text-xs px-2.5 py-1 rounded-md font-mono">Expo</span>
+          <span class="project-tech bg-gray-800 text-gray-400 text-xs px-2.5 py-1 rounded-md font-mono">IAP</span>
+        </div>
+        <div class="text-gray-600 text-xs mt-auto pt-2 border-t border-gray-800">
+          🕐 Last updated: <span class="project-updated">2026-05-19</span>
+        </div>
+      </article>
+
+      <!-- PROJECT: thang-blog -->
+      <article data-project="thang-blog" data-status="paused" class="card-paused bg-gray-900 border-2 rounded-2xl p-5 flex flex-col gap-3">
+        <div class="flex items-start justify-between gap-2">
+          <h2 class="project-name text-xl font-bold text-white tracking-tight">thang-blog</h2>
+          <span class="project-status badge-paused text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">⏸️ Paused</span>
+        </div>
+        <p class="project-desc text-gray-400 text-sm leading-relaxed">Blog cá nhân xây trên Astro 5, fast & static.</p>
+        <div class="space-y-2 text-sm">
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">🎯 Goal</span>
+            <span class="project-goal text-gray-200">Blog cá nhân</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">⚡ Next</span>
+            <span class="project-next text-gray-400">TBD</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">👤 Users</span>
+            <span class="text-gray-400">Chưa</span>
+          </div>
+          <div class="flex gap-2">
+            <span class="text-gray-500 w-24 shrink-0">💰 Revenue</span>
+            <span class="text-gray-400">Chưa</span>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-2 mt-1">
+          <span class="project-tech bg-gray-800 text-gray-400 text-xs px-2.5 py-1 rounded-md font-mono">Astro 5</span>
+          <span class="project-tech bg-gray-800 text-gray-400 text-xs px-2.5 py-1 rounded-md font-mono">Static</span>
+        </div>
+        <div class="text-gray-600 text-xs mt-auto pt-2 border-t border-gray-800">
+          🕐 Last updated: <span class="project-updated">2026-05-19</span>
+        </div>
+      </article>
+
+    </div>
+    <!-- END project-grid -->
+
+    <!-- ===== FOOTER / RULES ===== -->
+    <footer class="mt-12 pt-6 border-t border-gray-800 space-y-3">
+      <div class="flex flex-wrap gap-6 text-sm text-gray-500">
+        <span>📅 Last reviewed: <strong class="text-gray-300">2026-05-19</strong></span>
+        <span>👤 Owner: <strong class="text-gray-300">Quyet</strong></span>
+      </div>
+      <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-sm text-gray-400 space-y-1">
+        <p class="text-gray-300 font-semibold text-xs uppercase tracking-widest mb-2">📋 Rules</p>
+        <p>• <strong class="text-white">Chỉ 1 project Active</strong> tại một thời điểm — focus beats multitasking.</p>
+        <p>• Parking = đang giữ lại để quay lại sau, không bị xóa.</p>
+        <p>• Khi Active project xong hoặc stall → move về Parking, pick project tiếp.</p>
+        <p>• Update "Last updated" mỗi khi có thay đổi trạng thái hoặc next action.</p>
+      </div>
+    </footer>
+
+  </div>
+
+  <script>
+    // Auto-calculate summary counts from project data
+    function updateSummary() {
+      const articles = document.querySelectorAll('#project-grid article[data-status]');
+      const counts = { total: articles.length, active: 0, parking: 0, paused: 0, done: 0 };
+      articles.forEach(a => {
+        const s = a.dataset.status;
+        if (counts[s] !== undefined) counts[s]++;
+      });
+      document.getElementById('count-total').textContent   = counts.total;
+      document.getElementById('count-active').textContent  = counts.active;
+      document.getElementById('count-parking').textContent = counts.parking;
+      document.getElementById('count-paused').textContent  = counts.paused;
+    }
+
+    // Filter cards by status
+    function filterProjects(status) {
+      const articles = document.querySelectorAll('#project-grid article');
+      articles.forEach(a => {
+        if (status === 'all' || a.dataset.status === status) {
+          a.classList.remove('hidden-card');
+        } else {
+          a.classList.add('hidden-card');
+        }
+      });
+      // Update active button
+      document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.classList.toggle('active-filter', btn.dataset.filter === status);
+      });
+    }
+
+    updateSummary();
+  </script>
+</body>
+</html>
