@@ -140,10 +140,10 @@
       <!-- PROJECT: youtube-autopilot -->
       <article data-project="youtube-autopilot" data-status="parking" class="card-parking bg-gray-900 border-2 rounded-2xl p-5 flex flex-col gap-3">
         <div class="flex items-start justify-between gap-2">
-          <h2 class="project-name text-xl font-bold text-white tracking-tight">youtube-autopilot</h2>
+          <h2 class="project-name text-xl font-bold text-white tracking-tight">youtube-autopilot <span class="text-sm text-gray-500 font-normal">(Vidspark)</span></h2>
           <span class="project-status badge-parking text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap">🅿️ Parking</span>
         </div>
-        <p class="project-desc text-gray-400 text-sm leading-relaxed">Python CLI tool tự động hóa việc upload, schedule và quản lý nội dung cho nhiều YouTube channel.</p>
+        <p class="project-desc text-gray-400 text-sm leading-relaxed">Python CLI + Electron desktop tự động hóa full pipeline video: topic → script → TTS → images → MP4 render.</p>
         <div class="space-y-2 text-sm">
           <div class="flex gap-2">
             <span class="text-gray-500 w-24 shrink-0">🎯 Goal</span>
@@ -151,7 +151,7 @@
           </div>
           <div class="flex gap-2">
             <span class="text-gray-500 w-24 shrink-0">⚡ Next</span>
-            <span class="project-next text-amber-300 font-medium">Fix Telegram bot + test pipeline đầy đủ</span>
+            <span class="project-next text-amber-300 font-medium">End-to-end render test (Windows)</span>
           </div>
           <div class="flex gap-2">
             <span class="text-gray-500 w-24 shrink-0">👤 Users</span>
@@ -162,13 +162,35 @@
             <span class="text-gray-400">Chưa</span>
           </div>
         </div>
+        <!-- Vidspark tasks -->
+        <div class="bg-gray-800/50 rounded-xl p-3 text-xs space-y-1">
+          <p class="text-gray-400 font-semibold uppercase tracking-widest mb-2">Vidspark tasks</p>
+          <p class="text-green-400">✅ STT pipeline step (Whisper → .srt)</p>
+          <p class="text-green-400">✅ Pipeline step toggles (tts_enabled, image_enabled, stt_enabled, render_enabled) — PR #13</p>
+          <p class="text-green-400">✅ Setup scripts (macOS / Windows / Linux)</p>
+          <p class="text-green-400">✅ auto_render setting + project name as {topicId}_{channel_display_name}</p>
+          <p class="text-amber-300">⬜ End-to-end render test (Windows) — TODO</p>
+        </div>
+        <!-- Open PRs -->
+        <div class="bg-gray-800/50 rounded-xl p-3 text-xs space-y-1">
+          <p class="text-gray-400 font-semibold uppercase tracking-widest mb-2">Open PRs (pending merge)</p>
+          <p class="text-blue-300">#5 Settings DB migration (feat/settings-db-storage → main)</p>
+          <p class="text-blue-300">#8 macOS scripts update → main</p>
+          <p class="text-blue-300">#9 README update → main</p>
+          <p class="text-blue-300">#10 Whisper lazy install → dev2</p>
+          <p class="text-blue-300">#11 Google Flow Lab lazy install → dev2</p>
+          <p class="text-blue-300">#12 Remove pre-bundled whisper/playwright from Docker → dev2</p>
+          <p class="text-blue-300">#13 Pipeline step on/off toggles → dev2</p>
+        </div>
         <div class="flex flex-wrap gap-2 mt-1">
           <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">Python</span>
-          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">CLI</span>
-          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">Telegram Bot</span>
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">FastAPI</span>
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">Electron</span>
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">React</span>
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">SQLite</span>
         </div>
         <div class="text-gray-600 text-xs mt-auto pt-2 border-t border-gray-800">
-          🕐 Last updated: <span class="project-updated">2026-05-19</span>
+          🕐 Last updated: <span class="project-updated">2026-05-21</span>
         </div>
       </article>
 
@@ -255,7 +277,7 @@
           </div>
           <div class="flex gap-2">
             <span class="text-gray-500 w-24 shrink-0">⚡ Next</span>
-            <span class="project-next text-amber-300 font-medium">TBD</span>
+            <span class="project-next text-amber-300 font-medium">Burn .srt captions via ffmpeg</span>
           </div>
           <div class="flex gap-2">
             <span class="text-gray-500 w-24 shrink-0">👤 Users</span>
@@ -266,13 +288,21 @@
             <span class="text-green-400 font-medium">Có payment system ✓</span>
           </div>
         </div>
+        <!-- catme tasks -->
+        <div class="bg-gray-800/50 rounded-xl p-3 text-xs space-y-1">
+          <p class="text-gray-400 font-semibold uppercase tracking-widest mb-2">catme tasks</p>
+          <p class="text-yellow-300">🔄 Caption style config UI — WIP</p>
+          <p class="text-amber-300">⬜ Burn .srt captions via ffmpeg — TODO</p>
+          <p class="text-red-400">🚫 Ubuntu 20.04 support — Blocked</p>
+        </div>
         <div class="flex flex-wrap gap-2 mt-1">
           <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">Tauri</span>
           <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">React</span>
+          <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">FFmpeg</span>
           <span class="project-tech bg-gray-800 text-amber-300 text-xs px-2.5 py-1 rounded-md font-mono">Video</span>
         </div>
         <div class="text-gray-600 text-xs mt-auto pt-2 border-t border-gray-800">
-          🕐 Last updated: <span class="project-updated">2026-05-19</span>
+          🕐 Last updated: <span class="project-updated">2026-05-21</span>
         </div>
       </article>
 
@@ -351,7 +381,7 @@
     <!-- ===== FOOTER / RULES ===== -->
     <footer class="mt-12 pt-6 border-t border-gray-800 space-y-3">
       <div class="flex flex-wrap gap-6 text-sm text-gray-500">
-        <span>📅 Last reviewed: <strong class="text-gray-300">2026-05-19</strong></span>
+        <span>📅 Last reviewed: <strong class="text-gray-300">2026-05-21</strong></span>
         <span>👤 Owner: <strong class="text-gray-300">Quyet</strong></span>
       </div>
       <div class="bg-gray-900 border border-gray-800 rounded-xl p-4 text-sm text-gray-400 space-y-1">
